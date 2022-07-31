@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class UserAuthController extends Controller
@@ -12,7 +13,7 @@ class UserAuthController extends Controller
         $data = $request->validate([
             'name' => 'required|max:255',
             'email' => 'required|email|unique:users',
-            'password' => 'required|confirmed'
+            'password' => 'required|confirmed|min:8',
         ]);
 
         $data['password'] = bcrypt($request->password);
@@ -21,14 +22,16 @@ class UserAuthController extends Controller
 
         $token = $user->createToken('API Token')->accessToken;
 
-        return response([ 'user' => $user, 'token' => $token]);
+        // return response([ 'user' => $user, 'token' => $token]);
+
+        return ResponseFormatter::success($user, "user has been created", 201, 'success');
     }
 
     public function login(Request $request)
     {
         $data = $request->validate([
             'email' => 'email|required',
-            'password' => 'required'
+            'password' => 'required|min:8'
         ]);
 
         if (!auth()->attempt($data)) {
